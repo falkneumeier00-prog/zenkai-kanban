@@ -10,7 +10,6 @@
     "check": "astro check",
     "test": "vitest run",
     "db:migrate": "node scripts/migrate.mjs",
-    "db:deploy": "prisma migrate deploy",
     "hash-passwort": "node scripts/hash-passwort.mjs"
   },
   "dependencies": {
