@@ -34,6 +34,9 @@ npm run db:migrate                                  # Tabellen + die fünf Berei
 npm run dev                                         # http://localhost:4321
 ```
 
+Die Paketversionen sind in `package.json` fest eingetragen. `package-lock.json` liegt vorerst nicht im Repo;
+nach dem ersten `npm install` gern committen (dann `package-lock.json` aus `.gitignore` streichen).
+
 Tests: `npm test` (Regeln und Hashing). Der Klick-Durchlauf im Browser liegt in `tests/e2e/durchklicken.py`
 (Python + Playwright, braucht einen laufenden Dev-Server und eine leere Datenbank).
 
@@ -41,7 +44,7 @@ Tests: `npm test` (Regeln und Hashing). Der Klick-Durchlauf im Browser liegt in 
 
 1. **Neon:** kostenloses Projekt anlegen, Region Frankfurt (`aws-eu-central-1`). Die **pooled** Verbindungs-URL kopieren.
 2. **Migrationen** einmal von deinem Rechner aus: `DATABASE_URL="<neon-url>" npm run db:migrate`
-3. **GitHub:** Repo in einer GitHub-Organisation anlegen (nicht nur im eigenen Account), zweite Person als Admin.
+3. **GitHub:** Zweite Person als Collaborator mit Admin-Rechten eintragen.
 4. **Vercel:** Repo importieren, Framework „Astro“ wird erkannt. Unter *Settings → Environment Variables* eintragen:
    `DATABASE_URL`, `TOR_PASSWORT_HASH`, `SESSION_SECRET`, `RUECKSETZ_GENEHMIGER`.
 5. Deploy. Fertig. Jeder Push auf `main` geht live, jeder Pull Request bekommt eine Vorschau.
