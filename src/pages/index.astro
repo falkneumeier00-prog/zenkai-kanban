@@ -1,0 +1,35 @@
+---
+import Layout from '../layouts/Layout.astro';
+const fehler = Astro.url.searchParams.get('fehler');
+---
+<Layout titel="Tor der Diplomatie" ohneKopf>
+  <main class="tor">
+    <div class="rolle">
+      <div class="stab" aria-hidden="true"></div>
+      <div class="papier">
+        <img src="/blatt.svg" alt="" width="56" height="56" />
+        <h1>Tor der Diplomatie</h1>
+        <p>Hier planen die Diplomaten Konohas, wer woran arbeitet. Gib das Passwort der Diplomatie ein.</p>
+        {fehler && <p class="meldung" role="alert">{fehler}</p>}
+        <form method="post" action="/api/tor">
+          <label class="feld">
+            <span>Passwort der Diplomatie</span>
+            <input type="password" name="passwort" autocomplete="current-password" required autofocus />
+          </label>
+          <button class="knopf" type="submit">Eintreten</button>
+        </form>
+      </div>
+      <div class="stab" aria-hidden="true"></div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .tor { min-height: 100dvh; display: grid; place-items: center; padding: 1.5rem; }
+  .rolle { width: min(440px, 100%); }
+  .stab { height: 14px; margin: 0 -14px; border-radius: 7px; background: linear-gradient(var(--holz), #6d5235); box-shadow: 0 2px 0 rgba(0,0,0,0.12); }
+  .papier { background: var(--washi-hell); padding: 2rem 1.75rem 1.75rem; border-left: 1px solid var(--linie); border-right: 1px solid var(--linie); display: grid; gap: 1rem; }
+  h1 { font-size: clamp(2rem, 7vw, 2.6rem); color: var(--moos); }
+  p { margin: 0; color: var(--sumi-leise); }
+  form { display: grid; gap: 1rem; margin-top: 0.25rem; }
+</style>

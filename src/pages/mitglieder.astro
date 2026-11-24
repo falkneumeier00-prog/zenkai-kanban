@@ -1,0 +1,79 @@
+---
+import { asc, eq } from 'drizzle-orm';
+import Layout from '../layouts/Layout.astro';
+import { db, schema } from '../db/client';
+import { NEU_DABEI_TAGE } from '../lib/regeln';
+
+const ich = Astro.locals.mitglied!;
+const fehler = Astro.url.searchParams.get('fehler');
+const alle = await db.select({
+  id: schema.mitglieder.id, name: schema.mitglieder.name, status: schema.mitglieder.status,
+  eingetragenAm: schema.mitglieder.eingetragenAm, bereich: schema.bereiche.name,
+}).from(schema.mitglieder)
+  .leftJoin(schema.bereiche, eq(schema.bereiche.id, schema.mitglieder.bereichId))
+  .orderBy(asc(schema.mitglieder.name));
+
+const grenze = Date.now() - NEU_DABEI_TAGE * 86_400_000;
+const gruppen = [
+  { status: 'aktiv', titel: 'Aktiv' },
+  { status: 'gefallen', titel: 'Gefallen' },
+  { status: 'ehemalig', titel: 'Ehemalige' },
+  { status: 'ausgeblendet', titel: 'Ausgeblendet (gehört nicht dazu)' },
+] as const;
+const datum = (d: Date) => d.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+<Layout titel="Mitglieder">
+  <main class="inhalt schmal mitglieder">
+    <h1>Mitglieder</h1>
+    <p class="leise">Jeder trägt sich selbst ein. Wer nicht dazugehört, kann von jedem Mitglied ausgeblendet werden; das steht im Verlauf und lässt sich rückgängig machen.</p>
+    {fehler && <p class="meldung" role="alert">{fehler}</p>}
+    {gruppen.map((g) => {
+      const liste = alle.filter((m) => m.status === g.status);
+      if (liste.length === 0 && g.status !== 'aktiv') return null;
+      return (
+        <section>
+          <h2>{g.titel} <span class="leise">({liste.length})</span></h2>
+          <ul>
+            {liste.map((m) => (
+              <li>
+                <div class="wer">
+                  <span class:list={['siegel', { ich: m.id === ich.id }]}>{g.status === 'gefallen' ? '✝ ' : ''}{m.name}</span>
+                  <small>
+                    {m.bereich ?? 'Ohne Bereich'}, eingetragen am {datum(m.eingetragenAm)}
+                    {g.status === 'aktiv' && m.eingetragenAm.getTime() > grenze && <strong class="neu"> neu</strong>}
+                  </small>
+                </div>
+                {m.id !== ich.id && (
+                  <form method="post" action={`/api/mitglieder/${m.id}`} class="status-form">
+                    <label class="sr-only" for={`status-${m.id}`}>Status von {m.name}</label>
+                    <select name="status" id={`status-${m.id}`}>
+                      <option value="aktiv" selected={m.status === 'aktiv'}>Aktiv</option>
+                      <option value="gefallen" selected={m.status === 'gefallen'}>Gefallen</option>
+                      <option value="ehemalig" selected={m.status === 'ehemalig'}>Ehemalig</option>
+                      <option value="ausgeblendet" selected={m.status === 'ausgeblendet'}>Gehört nicht dazu</option>
+                    </select>
+                    <button class="knopf klein leise" type="submit">Ändern</button>
+                  </form>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      );
+    })}
+  </main>
+</Layout>
+
+<style>
+  .mitglieder { display: grid; gap: 1.25rem; }
+  h1 { font-size: 2.2rem; color: var(--moos); }
+  h2 { font-size: 1.3rem; margin-bottom: 0.6rem; }
+  .leise { color: var(--sumi-leise); margin: 0; font-weight: 400; }
+  ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+  li { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; flex-wrap: wrap; padding: 0.7rem 0.9rem; background: var(--washi-hell); border: 1px solid var(--linie); border-radius: 12px; }
+  .wer { display: grid; gap: 0.3rem; justify-items: start; }
+  small { color: var(--sumi-leise); }
+  .neu { color: var(--hanko); }
+  .status-form { display: flex; gap: 0.5rem; align-items: center; }
+  .status-form select { width: auto; }
+</style>

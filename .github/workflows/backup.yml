@@ -1,0 +1,26 @@
+name: Nächtliches Backup
+on:
+  schedule: [{ cron: '17 2 * * *' }]   # jede Nacht 02:17 UTC
+  workflow_dispatch:
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Werkzeuge installieren
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client age
+      - name: Sichern, verschlüsseln, hochladen
+        env:
+          DATABASE_URL_DIRECT: ${{ secrets.DATABASE_URL_DIRECT }}
+          AGE_PUBLIC_KEY: ${{ secrets.AGE_PUBLIC_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          set -euo pipefail
+          DATEI="backup-$(date -u +%Y-%m-%d).sql.gz.age"
+          pg_dump --no-owner --no-privileges "$DATABASE_URL_DIRECT" | gzip | age -r "$AGE_PUBLIC_KEY" > "$DATEI"
+          test -s "$DATEI"
+          aws s3 cp "$DATEI" "s3://${{ secrets.R2_BUCKET }}/$DATEI" \
+            --endpoint-url "https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com"

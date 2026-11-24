@@ -1,0 +1,56 @@
+---
+import { desc, isNotNull, eq } from 'drizzle-orm';
+import Layout from '../layouts/Layout.astro';
+import { db, schema } from '../db/client';
+import { SPALTEN_TITEL } from '../lib/regeln';
+
+const fehler = Astro.url.searchParams.get('fehler');
+const karten = await db.select({
+  id: schema.karten.id, titel: schema.karten.titel, spalte: schema.karten.spalte, projekt: schema.karten.projekt,
+  archiviertAm: schema.karten.archiviertAm, bereich: schema.bereiche.name,
+}).from(schema.karten)
+  .leftJoin(schema.bereiche, eq(schema.bereiche.id, schema.karten.bereichId))
+  .where(isNotNull(schema.karten.archiviertAm))
+  .orderBy(desc(schema.karten.archiviertAm))
+  .limit(300);
+const eintraege = await db.select({ karteId: schema.eintraege.karteId, name: schema.mitglieder.name, art: schema.eintraege.art })
+  .from(schema.eintraege).innerJoin(schema.mitglieder, eq(schema.mitglieder.id, schema.eintraege.mitgliedId));
+const namenVon = (id: number) => eintraege.filter((e) => e.karteId === id);
+---
+<Layout titel="Archiv">
+  <main class="inhalt schmal archiv">
+    <h1>Archiv</h1>
+    <p class="leise">Abgeschlossenes landet nach 14 Tagen von selbst hier. Nichts wird gelöscht; jede Karte lässt sich zurückholen.</p>
+    {fehler && <p class="meldung" role="alert">{fehler}</p>}
+    {karten.length === 0 ? <p class="leise">Das Archiv ist noch leer.</p> : (
+      <ul>
+        {karten.map((k) => (
+          <li>
+            <div class="was">
+              <strong>{k.titel}</strong>
+              <small>{[k.bereich, k.projekt, SPALTEN_TITEL[k.spalte]].filter(Boolean).join(' / ')}, archiviert am {k.archiviertAm!.toLocaleDateString('de-DE')}</small>
+              <div class="siegel-reihe">
+                {namenVon(k.id).map((e) => <span class:list={['siegel', { hilft: e.art === 'hilft_mit' }]}>{e.name}</span>)}
+              </div>
+            </div>
+            <form method="post" action={`/api/karten/${k.id}`}>
+              <input type="hidden" name="aktion" value="zurueckholen" />
+              <button class="knopf klein leise" type="submit">Zurückholen</button>
+            </form>
+          </li>
+        ))}
+      </ul>
+    )}
+  </main>
+</Layout>
+
+<style>
+  .archiv { display: grid; gap: 1rem; }
+  h1 { font-size: 2.2rem; color: var(--moos); }
+  .leise { color: var(--sumi-leise); margin: 0; }
+  ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+  li { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; flex-wrap: wrap; padding: 0.75rem 0.9rem; background: var(--washi-hell); border: 1px solid var(--linie); border-radius: 12px; }
+  .was { display: grid; gap: 0.3rem; }
+  small { color: var(--sumi-leise); }
+  .siegel-reihe { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+</style>

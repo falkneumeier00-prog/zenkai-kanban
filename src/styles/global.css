@@ -1,0 +1,104 @@
+@import '@fontsource/shippori-mincho/600.css';
+@import '@fontsource/shippori-mincho/800.css';
+@import '@fontsource/zen-kaku-gothic-new/400.css';
+@import '@fontsource/zen-kaku-gothic-new/700.css';
+
+:root {
+  --washi: #eef0e6;        /* Papier, leicht grünlich */
+  --washi-hell: #f8f9f3;   /* Zettel */
+  --sumi: #1f2a24;         /* Tinte */
+  --sumi-leise: #56635b;   /* zweite Textebene */
+  --blatt: #3e7d4a;        /* Konoha-Grün */
+  --moos: #2a4f33;         /* dunkles Grün */
+  --hanko: #b8332b;        /* Siegelrot: nur für Namen-Siegel und Abschluss */
+  --holz: #8a6a45;         /* Schriftrollen-Stab */
+  --linie: #cfd4c4;
+  --fokus: #2f6fd6;
+  --schrift-titel: 'Shippori Mincho', 'Hiragino Mincho ProN', Georgia, serif;
+  --schrift-text: 'Zen Kaku Gothic New', 'Hiragino Sans', system-ui, sans-serif;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--washi);
+  color: var(--sumi);
+  font-family: var(--schrift-text);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  /* feine Papierfaser */
+  background-image:
+    radial-gradient(rgba(31, 42, 36, 0.035) 1px, transparent 1px),
+    radial-gradient(rgba(31, 42, 36, 0.025) 1px, transparent 1px);
+  background-size: 7px 7px, 13px 13px;
+  background-position: 0 0, 3px 5px;
+  min-height: 100dvh;
+}
+
+h1, h2, h3 { font-family: var(--schrift-titel); font-weight: 800; line-height: 1.2; margin: 0; letter-spacing: 0.01em; }
+a { color: var(--moos); }
+:focus-visible { outline: 3px solid var(--fokus); outline-offset: 2px; border-radius: 4px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+.knopf {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.4em;
+  min-height: 44px; padding: 0 1.1em; border-radius: 999px;
+  border: 1.5px solid var(--moos); background: var(--moos); color: var(--washi-hell);
+  font-weight: 700; text-decoration: none;
+}
+.knopf:hover { background: var(--sumi); border-color: var(--sumi); }
+.knopf.leise { background: transparent; color: var(--moos); }
+.knopf.leise:hover { background: rgba(42, 79, 51, 0.08); }
+.knopf.klein { min-height: 36px; padding: 0 0.9em; font-size: 0.9rem; }
+.knopf[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+.feld { display: grid; gap: 0.3em; }
+.feld > span { font-size: 0.85rem; color: var(--sumi-leise); font-weight: 700; }
+input[type=text], input[type=search], input[type=password], input[type=url], input[type=date], select, textarea {
+  width: 100%; min-height: 44px; padding: 0.55em 0.75em;
+  border: 1.5px solid var(--linie); border-radius: 10px; background: var(--washi-hell);
+}
+textarea { min-height: 6em; resize: vertical; line-height: 1.55; }
+input:focus, select:focus, textarea:focus { border-color: var(--blatt); outline: none; box-shadow: 0 0 0 3px rgba(62, 125, 74, 0.2); }
+
+.meldung { padding: 0.7em 1em; border-radius: 10px; background: #f6e4e1; color: #7a1f19; border: 1px solid #e6bdb7; }
+.hinweis { padding: 0.7em 1em; border-radius: 10px; background: #e3ede3; color: var(--moos); border: 1px solid #c3d6c5; }
+
+/* Namenssiegel (Hanko) */
+.siegel {
+  display: inline-flex; align-items: center; gap: 0.3em;
+  padding: 0.12em 0.55em 0.08em; border: 1.5px solid var(--hanko); border-radius: 6px;
+  color: var(--hanko); font-family: var(--schrift-titel); font-weight: 800; font-size: 0.85rem;
+  background: rgba(184, 51, 43, 0.04); transform: rotate(-1.5deg); white-space: nowrap;
+}
+.siegel.hilft { border-style: dashed; transform: rotate(1deg); }
+.siegel.ich { background: var(--hanko); color: var(--washi-hell); }
+
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Kopfleiste */
+.kopf {
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  padding: 0.75rem clamp(0.75rem, 3vw, 2rem); border-bottom: 1px solid var(--linie);
+  background: rgba(248, 249, 243, 0.85); backdrop-filter: blur(4px); position: sticky; top: 0; z-index: 20;
+}
+.kopf .marke { display: flex; align-items: center; gap: 0.5rem; text-decoration: none; color: var(--sumi); }
+.kopf .marke strong { font-family: var(--schrift-titel); font-size: 1.15rem; font-weight: 800; }
+.kopf nav { display: flex; gap: 0.25rem; margin-left: auto; flex-wrap: wrap; align-items: center; }
+.kopf nav a { padding: 0.45em 0.8em; border-radius: 999px; text-decoration: none; color: var(--sumi-leise); font-weight: 700; }
+.kopf nav a[aria-current=page] { color: var(--moos); background: rgba(62, 125, 74, 0.12); }
+.kopf form { margin: 0; }
+.kopf .abmelden { background: none; border: 0; color: var(--sumi-leise); padding: 0.45em 0.6em; text-decoration: underline; }
+.inhalt { padding: clamp(0.75rem, 3vw, 2rem); max-width: 1500px; margin: 0 auto; }
+.schmal { max-width: 760px; }
+
+@media (max-width: 640px) {
+  .kopf { gap: 0.5rem; padding: 0.6rem 0.75rem; }
+  .kopf nav { margin-left: 0; width: 100%; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .kopf nav a { padding: 0.4em 0.65em; }
+  .kopf nav .siegel { margin-left: auto; }
+}

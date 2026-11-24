@@ -1,0 +1,40 @@
+---
+import '../styles/global.css';
+
+interface Props { titel: string; ohneKopf?: boolean }
+const { titel, ohneKopf = false } = Astro.props;
+const ich = Astro.locals.mitglied;
+const pfad = Astro.url.pathname;
+const links = [
+  { href: '/board', text: 'Board' },
+  { href: '/mitglieder', text: 'Mitglieder' },
+  { href: '/archiv', text: 'Archiv' },
+];
+---
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#2a4f33" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>{titel} · Diplomatie Konoha</title>
+  </head>
+  <body>
+    {!ohneKopf && ich && (
+      <header class="kopf">
+        <a class="marke" href="/board">
+          <img src="/blatt.svg" alt="" width="28" height="28" />
+          <strong>Diplomatie</strong>
+        </a>
+        <nav aria-label="Hauptmenü">
+          {links.map((l) => <a href={l.href} aria-current={pfad === l.href ? 'page' : undefined}>{l.text}</a>)}
+          <span class="siegel ich" title="Angemeldet als">{ich.name}</span>
+          <form method="post" action="/api/abmelden"><button class="abmelden" type="submit">Abmelden</button></form>
+        </nav>
+      </header>
+    )}
+    <slot />
+  </body>
+</html>

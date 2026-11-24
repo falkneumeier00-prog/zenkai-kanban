@@ -1,0 +1,49 @@
+---
+import { asc, eq } from 'drizzle-orm';
+import Layout from '../layouts/Layout.astro';
+import Eingang from '../components/Eingang';
+import { db, schema } from '../db/client';
+
+const zeilen = await db.select({
+  id: schema.mitglieder.id, name: schema.mitglieder.name, mudraHash: schema.mitglieder.mudraHash,
+  bereich: schema.bereiche.name,
+}).from(schema.mitglieder)
+  .leftJoin(schema.bereiche, eq(schema.bereiche.id, schema.mitglieder.bereichId))
+  .where(eq(schema.mitglieder.status, 'aktiv'))
+  .orderBy(asc(schema.mitglieder.name));
+const namen = zeilen.map((z) => ({ id: z.id, name: z.name, bereich: z.bereich, brauchtNeueFolge: !z.mudraHash }));
+const bereiche = await db.select({ id: schema.bereiche.id, name: schema.bereiche.name }).from(schema.bereiche).orderBy(asc(schema.bereiche.reihenfolge));
+---
+<Layout titel="Wer bist du?" ohneKopf>
+  <main class="eingang-seite">
+    <Eingang client:load namen={namen} bereiche={bereiche} />
+  </main>
+</Layout>
+
+<style is:global>
+  .eingang-seite { min-height: 100dvh; display: grid; justify-items: center; align-content: start; padding: clamp(1.5rem, 6vh, 4rem) 1rem 3rem; }
+  .eingang { width: min(520px, 100%); display: grid; gap: 1.1rem; }
+  .eingang h1 { font-size: clamp(1.8rem, 6vw, 2.4rem); color: var(--moos); }
+  .eingang .leise, .eingang .leer { margin: 0; color: var(--sumi-leise); }
+  .eingang .reihe { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+  .eingang .formular { display: grid; gap: 0.9rem; }
+  .namen { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.6rem; }
+  .name-knopf { width: 100%; min-height: 64px; display: grid; justify-items: start; gap: 0.2rem; padding: 0.7rem 0.8rem; border: 1.5px solid var(--linie); border-radius: 12px; background: var(--washi-hell); text-align: left; }
+  .name-knopf:hover { border-color: var(--hanko); }
+  .name-knopf small { color: var(--sumi-leise); font-size: 0.8rem; }
+  .text-knopf { background: none; border: 0; color: var(--sumi-leise); text-decoration: underline; padding: 0.5em 0; }
+
+  .mudra { display: grid; gap: 0.8rem; }
+  .mudra-kopf { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; font-weight: 700; }
+  .mudra-punkte { display: flex; gap: 0.4rem; }
+  .punkt { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--holz); display: grid; place-items: center; font-size: 0; }
+  .punkt.voll { background: var(--hanko); border-color: var(--hanko); }
+  .mudra-raster { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
+  .mudra-kachel { aspect-ratio: 1; display: grid; place-items: center; align-content: center; gap: 0.15rem; border: 1.5px solid var(--linie); border-radius: 14px; background: var(--washi-hell); padding: 0.3rem; touch-action: manipulation; }
+  .mudra-kachel .zeichen { font-family: var(--schrift-titel); font-size: clamp(1.6rem, 7vw, 2.2rem); line-height: 1; color: var(--sumi); }
+  .mudra-kachel .name { font-size: 0.75rem; color: var(--sumi-leise); }
+  .mudra-kachel:hover:not([disabled]) { border-color: var(--blatt); background: #fff; }
+  .mudra-kachel:active:not([disabled]) { transform: scale(0.96); }
+  .mudra-kachel[disabled] { opacity: 0.45; cursor: default; }
+  .mudra-kachel.zurueck .zeichen { color: var(--sumi-leise); }
+</style>
